@@ -1,0 +1,41 @@
+{
+    "@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
+    "name": "ncsa.pdg-model-finetuner",
+    "version": "1.0",
+    "description": "Model Inference extractor for Ice Wedge Polygon Dataset",
+    "author": "Vismayak Mohanarajan",
+    "contributors": [
+    ],
+    "contexts": [],
+    "repository": [
+      {
+        "repType": "git",
+        "repUrl": "https://opensource.ncsa.illinois.edu/stash/scm/cats/pyclowder.git"
+      }
+    ],
+    "process": {
+      "file": [
+      "text/*"
+    ]
+    },
+    "max_retry": 1,
+    "external_services": [],
+    "dependencies": [],
+    "bibtex": [],
+    "parameters": {
+      "schema": {
+          "MODEL_FILE_ID":{
+            "type":"string",
+            "title":"Model file ID",
+            "description":"The Clowder file id of the Model file",
+            "format": "ClowderFile"
+         },
+         "CONFIDENCE_THRESHOLD": {
+          "type": "number",
+          "title": "Confidence Threshold",
+          "description": "Confidence threshold for the model",
+          "default": 0.6
+         }
+      }
+    }
+  }
