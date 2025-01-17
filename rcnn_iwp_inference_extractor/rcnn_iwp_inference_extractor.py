@@ -60,16 +60,14 @@ class PDGInferenceExtractor(Extractor):
 
         # Download the model file
         model_file = pyclowder.files.download(connector, host, secret_key, fileid=MODEL_FILE_ID)
-        image_file = pyclowder.files.download(connector, host, secret_key, fileid=file_id)
+        image_file = file_path
 
-        # Move and rename the model file
-        shutil.move(model_file, "model.pth")
 
         print(f"Model file: {model_file}")
         print(f"Image file: {image_file}")
 
         # Load the model and metadata
-        model = load_model("configs/mask_rcnn_vitdet.py", "configs/datasets/iwp.py", "model.pth")
+        model = load_model("configs/mask_rcnn_vitdet.py", "configs/datasets/iwp.py", model_file)
         metadata = get_metadata("iwp_test", "data/iwp/iwp_test.json")
 
         # Run inference on the image
@@ -78,10 +76,6 @@ class PDGInferenceExtractor(Extractor):
         # Upload the results
         output_file = "output.jpg"
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_file)
-
-        # Clean up
-        os.remove(output_file)
-        os.remove("model.pth")
 
 if __name__ == "__main__":
     extractor = PDGInferenceExtractor()

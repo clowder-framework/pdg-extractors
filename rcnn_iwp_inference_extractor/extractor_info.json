@@ -1,6 +1,6 @@
 {
     "@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
-    "name": "ncsa.pdg-model-finetuner",
+    "name": "ncsa.pdg-model-Inference-extractor",
     "version": "1.0",
     "description": "Model Inference extractor for Ice Wedge Polygon Dataset",
     "author": "Vismayak Mohanarajan",
