@@ -17,31 +17,37 @@ def get_folder_files(host,key,dataset_id,folder_id):
         files.append({'id':file_id,'name':name})
     return files
 
+def get_file_name(connector,host,key,file_id):
+    res = files.download_summary(connector=connector,host=host, key=key, fileid=file_id)
+    res = {
+        "name":res['name'],
+        "id":file_id,
+    }
+    return res
 
 def create_symlink_folder(host,key,dataset_id,folder_id,folder_name, folder_path ):
-    folder_path = f"{folder_path}/{folder_name}"
-    os.makedirs(folder_path, exist_ok=True)
     if os.environ.get("$MINIO_MOUNTED_PATH") == "":
         print("Minio mounted path not found")
         return
+    folder_path = f"{folder_path}/{folder_name}"
+    os.makedirs(folder_path, exist_ok=True)
     minio_path = os.environ.get("MINIO_MOUNTED_PATH")
     files = get_folder_files(host,key,dataset_id,folder_id)
     for file in files:
         file_id = file['id']
         file_name = file['name']
-        file_path = f"{minio_path}/{file_id}"
-        os.symlink(file_path, f"{folder_path}/{file_name}")
-    print(f"Created symlink folder {folder_path}")
+        source_file_path = f"{minio_path}/{file_id}"
+        os.symlink(source_file_path, f"{folder_path}/{file_name}")
+    return folder_path
 
 
+def create_symlink_file(host,key,file_id,file_path):
+    if os.environ.get("$MINIO_MOUNTED_PATH") == "":
+        print("Minio mounted path not found")
+        return
+    file_name = get_file_name(connector,host,key,file_id)['name']
+    minio_path = os.environ.get("MINIO_MOUNTED_PATH")
+    source_file_path = f"{minio_path}/{file_id}"
+    os.symlink(source_file_path, f"{file_path}/{file_name}")
+    return file_path
 
-
-if __name__ == "__main__":
-    CLOWDER_URL = ""
-    API_KEY = ""
-    FILE_ID = ""
-    connector = Connector(extractor_name="",extractor_info={}, clowder_url=CLOWDER_URL)
-
-    create_symlink_folder(CLOWDER_URL,API_KEY,"6787069a52b726ff197a708b","678707cc52b726ff197a7223","test","data")
-    img = cv2.imread("data/test/FID_493_Polygon_2.jpg")
-    print(img.shape)

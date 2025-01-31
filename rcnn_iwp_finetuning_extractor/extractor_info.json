@@ -23,19 +23,36 @@
     "dependencies": [],
     "bibtex": [],
     "parameters": {
-      //TODO: Need to change the schema to match the finetuning extractor
       "schema": {
-          "MODEL_FILE_ID":{
+          "MODEL_CONFIG_FILE_ID":{
             "type":"string",
-            "title":"Model file ID",
-            "description":"The Clowder file id of the Model file",
+            "title":"Model Config File ID",
+            "description":"The Model Config file that sets the finetuning parameters",
             "format": "ClowderFile"
          },
-         "CONFIDENCE_THRESHOLD": {
-          "type": "number",
-          "title": "Confidence Threshold",
-          "description": "Confidence threshold for the model",
-          "default": 0.6
+         "TRAIN_FOLDER":{
+          "type":"string",
+          "title":"Train Folder",
+          "description":"The folder containing the training Ice Wedge Polygon images",
+          "format": "ClowderFile",
+          "showOnlyDatasetFiles": false,
+          "selectFolder": true
+         },
+         "VAL_FOLDER":{
+          "type":"string",
+          "title":"Validation Folder",
+          "description":"The folder containing the validation Ice Wedge Polygon images",
+          "format": "ClowderFile",
+          "showOnlyDatasetFiles": false,
+          "selectFolder": true
+         },
+         "TEST_FOLDER":{
+          "type":"string",
+          "title":"Test Folder",
+          "description":"The folder containing the test Ice Wedge Polygon images",
+          "format": "ClowderFile",
+          "showOnlyDatasetFiles": false,
+          "selectFolder": true
          }
       }
     }
