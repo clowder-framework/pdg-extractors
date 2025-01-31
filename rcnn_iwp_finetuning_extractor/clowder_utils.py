@@ -41,7 +41,7 @@ def create_symlink_folder(host,key,dataset_id,folder_id,folder_name, folder_path
     return folder_path
 
 
-def create_symlink_file(host,key,file_id,file_path):
+def create_symlink_file(connector,host,key,file_id,file_path):
     if os.environ.get("$MINIO_MOUNTED_PATH") == "":
         print("Minio mounted path not found")
         return
@@ -50,4 +50,3 @@ def create_symlink_file(host,key,file_id,file_path):
     source_file_path = f"{minio_path}/{file_id}"
     os.symlink(source_file_path, f"{file_path}/{file_name}")
     return file_path
-

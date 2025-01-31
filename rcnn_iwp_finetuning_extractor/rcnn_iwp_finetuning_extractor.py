@@ -11,7 +11,7 @@ from pyclowder.extractors import Extractor
 import pyclowder.files
 from pyclowder.utils import CheckMessage
 
-from clowder_utils import create_symlink_folder
+from clowder_utils import create_symlink_folder, create_symlink_file
 import sys
 import os
 
@@ -79,16 +79,12 @@ class PDGFinetuningExtractor(Extractor):
         
         print(data)
 
-        create_symlink_file(host,secret_key,model_config_file_data['datasetId'],model_config_file_data["selectionID"],model_config_file_data["name"],"data")
+        print(create_symlink_file(connector,host,secret_key,model_config_file_data["selectionID"],"data"))
 
 
             
         
-        
-        print(f"Model config file: {model_config_file_id}")
-        print(f"Train folder: {train_folder}")
-        print(f"Val folder: {val_folder}")
-        print(f"Test folder: {test_folder}")
+    
 
 
 

@@ -10,6 +10,8 @@ import shutil
 from pyclowder.extractors import Extractor
 import pyclowder.files
 
+from pyclowder.utils import CheckMessage
+
 import sys
 import os
 
@@ -26,6 +28,10 @@ class PDGInferenceExtractor(Extractor):
 
         logging.getLogger('pyclowder').setLevel(logging.DEBUG)
         logging.getLogger('__main__').setLevel(logging.DEBUG)
+    
+    def check_message(self, connector, host, secret_key, resource, parameters):
+        # Prevent downloading files by default
+        return CheckMessage.bypass
 
     def process_message(self, connector, host, secret_key, resource, parameters):
         # Process the file and upload the results
