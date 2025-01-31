@@ -15,7 +15,7 @@ from clowder_utils import create_symlink_folder, create_symlink_file
 import sys
 import os
 
-# from rcnn_iwp_training import invoke_main
+from rcnn_iwp_training import invoke_main
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -96,28 +96,28 @@ class PDGFinetuningExtractor(Extractor):
             data[folder]["path"] = create_symlink_folder(host,secret_key,folder_data['datasetId'],folder_data["selectionID"],folder,"data/iwp")
         
         for file, file_data in metadata.items():
-            metadata[file]["path"] = create_symlink_file(connector,host,secret_key,file_data["selectionID"],"data")
+            metadata[file]["path"] = create_symlink_file(connector,host,secret_key,file_data["selectionID"],"data/iwp")
 
         config_file = create_symlink_file(connector,host,secret_key,model_config_file_data["selectionID"],"data")
 
-        # # Set json path environment variable
-        # os.environ['MODEL_CONFIG_FILE_PATH'] = config_file
+        # Set json path environment variable
+        os.environ['MODEL_CONFIG_FILE_PATH'] = config_file
         
-        # invoke_main()
-        # print("Finetuning complete.")
+        invoke_main()
+        print("Finetuning complete.")
 
-        # output_dir = "results/"
-        # #TODO: Hardcoded for now but need to be changed as the code evolves.
-        # model_name = "clowder_mask_rcnn_vitdet"
-        # dataset_name = "iwp"
+        output_dir = "results/"
+        #TODO: Hardcoded for now but need to be changed as the code evolves.
+        model_name = "clowder_mask_rcnn_vitdet"
+        dataset_name = "iwp"
         
-        # # Upload the results
-        # output_file = f"{output_dir}/{model_name}/{dataset_name}/model_final.pth"
-        # new_output_file = f"{output_dir}/{model_name}/{dataset_name}/model_weights.pth"
-        # os.rename(output_file, new_output_file)
-        # pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, new_output_file)
+        # Upload the results
+        output_file = f"{output_dir}/{model_name}/{dataset_name}/model_final.pth"
+        new_output_file = f"{output_dir}/{model_name}/{dataset_name}/model_weights.pth"
+        os.rename(output_file, new_output_file)
+        pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, new_output_file)
 
-        # shutil.rmtree("results/")
+        shutil.rmtree("results/")
             
         
     

@@ -24,4 +24,4 @@ RUN git clone https://github.com/clowder-framework/pyclowder.git && \
     rm -rf pyclowder
 
 # CMD ["python", "-u","rcnn_iwp_inference_extractor.py"]
-
+CMD ["python", "-u","rcnn_iwp_finetuning_extractor.py"]
