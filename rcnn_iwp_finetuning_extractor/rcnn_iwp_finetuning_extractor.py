@@ -15,6 +15,8 @@ from clowder_utils import create_symlink_folder, create_symlink_file
 import sys
 import os
 
+# from rcnn_iwp_training import invoke_main
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class PDGFinetuningExtractor(Extractor):
@@ -52,36 +54,70 @@ class PDGFinetuningExtractor(Extractor):
                     params = parameters['parameters']
 
         # Load the model config file
-        if "MODEL_CONFIG_FILE_ID" in params:
-            model_config_file_data = json.loads(params["MODEL_CONFIG_FILE_ID"])  
+        if "MODEL_CONFIG_FILE" in params:
+            model_config_file_data = json.loads(params["MODEL_CONFIG_FILE"])  
         else:
-            raise ValueError("MODEL_CONFIG_FILE_ID is not provided in the parameters.")
+            raise ValueError("MODEL_CONFIG_FILE is not provided in the parameters.")
 
         data ={}
+        metadata = {}
 
         if "TRAIN_FOLDER" in params:
             data["train"] = json.loads(params["TRAIN_FOLDER"])
         else:
             raise ValueError("TRAIN_FOLDER is not provided in the parameters.")
 
+        if "TRAIN_DATA_METADATA" in params:
+            metadata["train"] = json.loads(params["TRAIN_DATA_METADATA"])
+        else:
+            raise ValueError("TRAIN_DATA_METADATA is not provided in the parameters.")
+
         if "VAL_FOLDER" in params:
             data["val"] = json.loads(params["VAL_FOLDER"])
         else:
             raise ValueError("VAL_FOLDER is not provided in the parameters.")
+
+        if "VAL_DATA_METADATA" in params:
+            metadata["val"] = json.loads(params["VAL_DATA_METADATA"])
+        else:
+            raise ValueError("VAL_DATA_METADATA is not provided in the parameters.")
 
         if "TEST_FOLDER" in params:
             data["test"] = json.loads(params["TEST_FOLDER"])
         else:
             raise ValueError("TEST_FOLDER is not provided in the parameters.")
 
+        if "TEST_DATA_METADATA" in params:
+            metadata["test"] = json.loads(params["TEST_DATA_METADATA"])
+        else:
+            raise ValueError("TEST_DATA_METADATA is not provided in the parameters.")
+
         for folder, folder_data in data.items():
-            data[folder]["path"] = create_symlink_folder(host,secret_key,folder_data['datasetId'],folder_data["selectionID"],folder,"data")
+            data[folder]["path"] = create_symlink_folder(host,secret_key,folder_data['datasetId'],folder_data["selectionID"],folder,"data/iwp")
         
-        print(data)
+        for file, file_data in metadata.items():
+            metadata[file]["path"] = create_symlink_file(connector,host,secret_key,file_data["selectionID"],"data")
 
-        print(create_symlink_file(connector,host,secret_key,model_config_file_data["selectionID"],"data"))
+        config_file = create_symlink_file(connector,host,secret_key,model_config_file_data["selectionID"],"data")
 
+        # # Set json path environment variable
+        # os.environ['MODEL_CONFIG_FILE_PATH'] = config_file
+        
+        # invoke_main()
+        # print("Finetuning complete.")
 
+        # output_dir = "results/"
+        # #TODO: Hardcoded for now but need to be changed as the code evolves.
+        # model_name = "clowder_mask_rcnn_vitdet"
+        # dataset_name = "iwp"
+        
+        # # Upload the results
+        # output_file = f"{output_dir}/{model_name}/{dataset_name}/model_final.pth"
+        # new_output_file = f"{output_dir}/{model_name}/{dataset_name}/model_weights.pth"
+        # os.rename(output_file, new_output_file)
+        # pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, new_output_file)
+
+        # shutil.rmtree("results/")
             
         
     

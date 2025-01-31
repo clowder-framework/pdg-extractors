@@ -48,5 +48,6 @@ def create_symlink_file(connector,host,key,file_id,file_path):
     file_name = get_file_name(connector,host,key,file_id)['name']
     minio_path = os.environ.get("MINIO_MOUNTED_PATH")
     source_file_path = f"{minio_path}/{file_id}"
-    os.symlink(source_file_path, f"{file_path}/{file_name}")
-    return file_path
+    target_file_path = f"{file_path}/{file_name}"
+    os.symlink(source_file_path, target_file_path)
+    return target_file_path
