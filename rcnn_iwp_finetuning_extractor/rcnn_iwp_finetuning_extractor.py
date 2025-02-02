@@ -37,9 +37,10 @@ class PDGFinetuningExtractor(Extractor):
 
     def process_message(self, connector, host, secret_key, resource, parameters):
         # Process the file and upload the results
-
         logger = logging.getLogger(__name__)
-        
+        dataset_id = resource['parent']['id']
+        print(f"Dataset ID: {dataset_id}")
+
         # Load user-defined params from the GUI.
         MODEL_FILE_ID = ""
         CONFIDENCE_THRESHOLD=0.6
@@ -103,8 +104,16 @@ class PDGFinetuningExtractor(Extractor):
         # Set json path environment variable
         os.environ['MODEL_CONFIG_FILE_PATH'] = config_file
         
-        invoke_main()
-        print("Finetuning complete.")
+        try:
+            invoke_main()
+            print("Finetuning complete.")
+        except Exception as e:
+            # Clean up
+            shutil.rmtree("results/")
+            shutil.rmtree("data/")
+            
+            print(f"Error: {e}")
+            raise e
 
         output_dir = "results/"
         #TODO: Hardcoded for now but need to be changed as the code evolves.
@@ -117,8 +126,9 @@ class PDGFinetuningExtractor(Extractor):
         os.rename(output_file, new_output_file)
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, new_output_file)
 
+        # Clean up
         shutil.rmtree("results/")
-            
+        shutil.rmtree("data/")
         
     
 
