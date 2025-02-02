@@ -108,9 +108,11 @@ class PDGFinetuningExtractor(Extractor):
             invoke_main()
             print("Finetuning complete.")
         except Exception as e:
-            # Clean up
-            shutil.rmtree("results/")
-            shutil.rmtree("data/")
+            # Clean up if exists
+            if os.path.exists("results/"):
+                shutil.rmtree("results/")
+            if os.path.exists("data/"):
+                shutil.rmtree("data/")
             
             print(f"Error: {e}")
             raise e
@@ -127,8 +129,10 @@ class PDGFinetuningExtractor(Extractor):
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, new_output_file)
 
         # Clean up
-        shutil.rmtree("results/")
-        shutil.rmtree("data/")
+        if os.path.exists("results/"):
+            shutil.rmtree("results/")
+        if os.path.exists("data/"):
+            shutil.rmtree("data/")
         
     
 
