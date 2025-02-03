@@ -10,6 +10,8 @@ import shutil
 from pyclowder.extractors import Extractor
 import pyclowder.files
 
+from pyclowder.utils import CheckMessage
+
 import sys
 import os
 
@@ -26,6 +28,7 @@ class PDGInferenceExtractor(Extractor):
 
         logging.getLogger('pyclowder').setLevel(logging.DEBUG)
         logging.getLogger('__main__').setLevel(logging.DEBUG)
+    
 
     def process_message(self, connector, host, secret_key, resource, parameters):
         # Process the file and upload the results
@@ -49,10 +52,11 @@ class PDGInferenceExtractor(Extractor):
                 if type(parameters == Dict):
                     params = parameters['parameters']
 
-        if "MODEL_FILE_ID" in params:
-            MODEL_FILE_ID = params["MODEL_FILE_ID"]
+        if "MODEL_FILE" in params:
+            model_metadata = json.loads(params["MODEL_FILE"])
+            MODEL_FILE_ID = model_metadata["selectionID"]
         else:
-            raise ValueError("MODEL_FILE_ID is not provided in the parameters.")
+            raise ValueError("MODEL_FILE is not provided in the parameters.")
         
         if "CONFIDENCE_THRESHOLD" in params:
             CONFIDENCE_THRESHOLD = params["CONFIDENCE_THRESHOLD"]

@@ -24,10 +24,10 @@
     "bibtex": [],
     "parameters": {
       "schema": {
-          "MODEL_FILE_ID":{
+          "MODEL_FILE":{
             "type":"string",
-            "title":"Model file ID",
-            "description":"The Clowder file id of the Model file",
+            "title":"Model file",
+            "description":"The Model weights file",
             "format": "ClowderFile"
          },
          "CONFIDENCE_THRESHOLD": {

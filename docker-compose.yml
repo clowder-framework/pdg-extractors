@@ -1,0 +1,53 @@
+services:
+  rcnn_iwp_inference_extractor:
+    build:
+      context: rcnn_iwp_inference_extractor
+      dockerfile: Dockerfile
+    networks:
+      - clowder2_pdg
+    restart: unless-stopped
+    environment:
+      #  Set environment variables for MinIO
+      MINIO_ENDPOINT: 
+      MINIO_ACCESS_KEY: 
+      MINIO_SECRET_KEY: 
+      MINIO_MOUNTED_PATH: /clowderfs
+      RABBITMQ_URI: 
+      CLOWDER_VERSION: 2
+      NVIDIA_VISIBLE_DEVICES: all
+    privileged: true
+    devices:
+      - /dev/fuse:/dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    runtime: nvidia
+
+  rcnn_iwp_finetuning_extractor:
+    build:
+      context: rcnn_iwp_finetuning_extractor
+      dockerfile: Dockerfile
+    networks:
+      - clowder2_pdg
+    restart: unless-stopped
+    environment:
+      #  Set environment variables for MinIO
+      MINIO_ENDPOINT: 
+      MINIO_ACCESS_KEY: 
+      MINIO_SECRET_KEY: 
+      MINIO_MOUNTED_PATH: /clowderfs
+      RABBITMQ_URI: 
+      CLOWDER_VERSION: 2
+      NVIDIA_VISIBLE_DEVICES: all
+    privileged: true
+    devices:
+      - /dev/fuse:/dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    runtime: nvidia
+
+networks:
+  clowder2_pdg:

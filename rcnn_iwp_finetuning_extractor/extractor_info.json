@@ -1,0 +1,77 @@
+{
+    "@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
+    "name": "ncsa.pdg-model-finetuning-extractor",
+    "version": "1.0",
+    "description": "Model Finetuning extractor for Ice Wedge Polygon Dataset",
+    "author": "Vismayak Mohanarajan",
+    "contributors": [
+    ],
+    "contexts": [],
+    "repository": [
+      {
+        "repType": "git",
+        "repUrl": "https://opensource.ncsa.illinois.edu/stash/scm/cats/pyclowder.git"
+      }
+    ],
+    "process": {
+      "file": [
+      "text/*"
+    ]
+    },
+    "max_retry": 1,
+    "external_services": [],
+    "dependencies": [],
+    "bibtex": [],
+    "parameters": {
+      "schema": {
+          "MODEL_CONFIG_FILE":{
+            "type":"string",
+            "title":"Model Config File",
+            "description":"The Model Config file that sets the finetuning parameters",
+            "format": "ClowderFile"
+         },
+         "TRAIN_FOLDER":{
+          "type":"string",
+          "title":"Train Folder",
+          "description":"The folder containing the training Ice Wedge Polygon images",
+          "format": "ClowderFile",
+          "showOnlyDatasetFiles": false,
+          "selectFolder": true
+         },
+         "TRAIN_DATA_METADATA":{
+          "type":"string",
+          "title":"Training Data Metadata",
+          "description":"The metadata for the training data",
+          "format": "ClowderFile"
+         },
+         "VAL_FOLDER":{
+          "type":"string",
+          "title":"Validation Folder",
+          "description":"The folder containing the validation Ice Wedge Polygon images",
+          "format": "ClowderFile",
+          "showOnlyDatasetFiles": false,
+          "selectFolder": true
+         },
+         "VAL_DATA_METADATA":{
+          "type":"string",
+          "title":"Validation Data Metadata",
+          "description":"The metadata for the validation data",
+          "format": "ClowderFile"
+         },
+         "TEST_FOLDER":{
+          "type":"string",
+          "title":"Test Folder",
+          "description":"The folder containing the test Ice Wedge Polygon images",
+          "format": "ClowderFile",
+          "showOnlyDatasetFiles": false,
+          "selectFolder": true
+         },
+         "TEST_DATA_METADATA":{
+          "type":"string",
+          "title":"Test Data Metadata",
+          "description":"The metadata for the test data",
+          "format": "ClowderFile"
+         }
+      }
+    }
+  }
