@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM debian:bullseye-slim
 
 # Install required packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -7,8 +7,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Create mount directory
-RUN mkdir /clowderfs
 
 # Create entrypoint script
 # The script mounts the bucket using credentials passed as environment variables.

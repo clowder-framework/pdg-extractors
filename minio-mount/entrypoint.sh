@@ -3,8 +3,8 @@
 set -e
 
 # Ensure required environment variables are set
-if [ -z "${MINIO_ACCESS_KEY}" ] || [ -z "${MINIO_SECRET_KEY}" ] || [ -z "${MINIO_ENDPOINT}" ]; then
-    echo "ERROR: MINIO_ACCESS_KEY, MINIO_SECRET_KEY, and MINIO_ENDPOINT must be set."
+if [ -z "${MINIO_ACCESS_KEY}" ] || [ -z "${MINIO_SECRET_KEY}" ] || [ -z "${MINIO_ENDPOINT}" || [ -z "MINIO_MOUNT_POINT" ] ]; then
+    echo "ERROR: MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_ENDPOINT, and MINIO_MOUNT_POINT must be set."
     exit 1
 fi
 
@@ -41,7 +41,7 @@ done
 echo "MinIO endpoint is responding!"
 
 # Mount the S3 bucket
-s3fs clowder /clowderfs \
+s3fs clowder ${MINIO_MOUNT_POINT} \
     -o passwd_file=/.miniocred \
     -o use_path_request_style \
     -o url=${MINIO_ENDPOINT}/ \
