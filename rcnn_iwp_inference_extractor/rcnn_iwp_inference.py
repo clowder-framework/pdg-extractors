@@ -10,6 +10,7 @@ from omegaconf import OmegaConf
 import torch
 
 import cv2
+import json
 
 # Function to load the model and weights
 def load_model(model_config, dataset_config, model_weights):
@@ -42,25 +43,75 @@ def run_inference(model, image_path, metadata, threshold=0.6):
     image_tensor = torch.from_numpy(image).permute(2, 0, 1)
     batched_inputs = [{"image": image_tensor}]
     
-    # TODO: Instead of printing, tag the image with the metadata of boxes and classes.
     outputs = model(batched_inputs)
-    print(outputs[0]["instances"].pred_classes)
-    print(outputs[0]["instances"].pred_boxes)
-
     instances = outputs[0]["instances"]
     mask = instances.scores >= threshold
     filtered_instances = instances[mask]
-
+    
+    # Extract bounding box data in COCO format
+    coco_boxes = extract_coco_boxes(filtered_instances, image_path)
+    
+    # Visualize and save the output image (original functionality)
     v = Visualizer(image[:, :, ::-1], metadata=metadata, scale=1.2)
     out = v.draw_instance_predictions(filtered_instances.to("cpu"))
     cv2.imwrite("output.jpg", out.get_image()[:, :, ::-1])
+    
+    return coco_boxes
 
+def extract_coco_boxes(instances, image_path):
+    """
+    Extract only bounding box information in COCO format
+    
+    Args:
+        instances: Detectron2 Instances object with detection results
+        image_path: Path to the input image
+    
+    Returns:
+        List of dictionaries with bounding box annotations in COCO format
+    """
+    import os
+    
+    # Move to CPU for easier processing
+    instances = instances.to("cpu")
+    
+    # Initialize results list
+    coco_boxes = []
+    
 
+    # Extract bounding boxes, scores and classes
+    if hasattr(instances, "pred_boxes") and len(instances.pred_boxes) > 0:
+        # Use detach() to remove gradient requirements before converting to numpy
+        boxes = instances.pred_boxes.tensor.detach().numpy()
+        scores = instances.scores.detach().numpy()
+        classes = instances.pred_classes.detach().numpy()
+        
+        for i, (box, score, class_id) in enumerate(zip(boxes, scores, classes)):
+            # Convert from [x1, y1, x2, y2] to [x, y, width, height] format for COCO
+            x1, y1, x2, y2 = box
+            coco_box = [float(x1), float(y1), float(x2 - x1), float(y2 - y1)]
+            
+            # Calculate area
+            area = float((x2 - x1) * (y2 - y1))
+            
+            annotation = {
+                "id": i + 1,
+                "category_id": int(class_id) + 1,  # COCO uses 1-indexed category IDs
+                "bbox": coco_box,
+                "area": area,
+                "score": float(score)
+            }
+            
+            coco_boxes.append(annotation)
+    
+    return coco_boxes
 
 if __name__ == "__main__":
-
-    model = load_model("configs/mask_rcnn_vitdet.py", "configs/datasets/iwp.py", "model_final.pth")
+    model = load_model("configs/mask_rcnn_vitdet.py", "configs/datasets/iwp.py", "model_weights.pth")
     metadata = get_metadata("iwp_test", "configs/metadata/iwp_test.json")
 
-    run_inference(model, "FID_434_Polygon_2.jpg", metadata, threshold=0.6)
+    coco_boxes = run_inference(model, "FID_434_Polygon_2.jpg", metadata, threshold=0.6)
+    
+    # Save COCO bounding box annotations to file
+    with open("coco_boxes.json", "w") as f:
+        json.dump(coco_boxes, f, indent=2)
     

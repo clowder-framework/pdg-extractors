@@ -37,6 +37,7 @@ class PDGInferenceExtractor(Extractor):
         
         file_path = resource["local_paths"][0]
         file_id = resource['id']
+        file_name = parameters['filename']
         dataset_id = resource['parent']['id']
 
         # Load user-defined params from the GUI.
@@ -75,11 +76,26 @@ class PDGInferenceExtractor(Extractor):
         metadata = get_metadata("iwp_test", "data/iwp/iwp_test.json")
 
         # Run inference on the image
-        run_inference(model, image_file, metadata, threshold=CONFIDENCE_THRESHOLD)
+        coco_mask_metadata = run_inference(model, image_file, metadata, threshold=CONFIDENCE_THRESHOLD)
+
+        metadata = {"COCO Bounding Boxes": coco_mask_metadata}
+        # post metadata to Clowder
+        metadata = self.get_metadata(metadata, 'file', file_id, host)
+
+        # Update the metadata of file
+        pyclowder.files.upload_metadata(connector, host, secret_key, file_id, metadata)
+
+        # Change the name of the output image to the name of the input image with _masked appended
+        output_file = f"{file_name}_masked.jpg"
+        shutil.copy("output.jpg", output_file)
+        os.remove("output.jpg")
 
         # Upload the results
-        output_file = "output.jpg"
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, output_file)
+
+        # Delete the output file
+        os.remove(output_file)
+        
 
 if __name__ == "__main__":
     extractor = PDGInferenceExtractor()
