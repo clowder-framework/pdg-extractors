@@ -22,8 +22,7 @@ from clowder_utils import create_symlink_folder, create_symlink_file
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rcnn_iwp_inference import load_model, get_metadata, run_inference
 
-# Define a simple Ray actor for image inference
-@ray.remote(num_cpus=1, memory=3 * 1024 * 1024 * 1024)
+@ray.remote(num_cpus=1, memory=4 * 1024 * 1024 * 1024)
 class ImageInferenceActor:
     def __init__(self, model_ref, metadata_ref):
         self.model = model_ref
@@ -31,7 +30,8 @@ class ImageInferenceActor:
 
     def process_image(self, image_path, threshold, output_folder, worker_id):
         try:
-            print(f"Running inference on {image_path}")
+            # Add unique worker ID to log message to distinguish between actors
+            print(f"Worker {worker_id} running inference on {image_path}")
             
             # Get just the filename from the path
             image_file = os.path.basename(image_path)
@@ -160,7 +160,7 @@ class PDGInferenceExtractor(Extractor):
         image_files = [os.path.join(dataset_folder, f) for f in os.listdir(dataset_folder)]
         
         # Create a pool of actors for inference
-        NUM_ACTORS = 1 # Adjust based on your system resources
+        NUM_ACTORS = 4 # Adjust based on your system resources
         actors = [ImageInferenceActor.remote(model_ref, metadata_ref) for _ in range(NUM_ACTORS)]
         actors_pool = ActorPool(actors)
         
