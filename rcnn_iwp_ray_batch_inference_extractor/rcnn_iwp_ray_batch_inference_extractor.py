@@ -30,10 +30,8 @@ class ImageInferenceActor:
 
     def process_image(self, image_path, threshold, output_folder, worker_id):
         try:
-            # Add unique worker ID to log message to distinguish between actors
             print(f"Worker {worker_id} running inference on {image_path}")
             
-            # Get just the filename from the path
             image_file = os.path.basename(image_path)
             
             # Create unique temporary output file using worker_id and image name
@@ -160,7 +158,7 @@ class PDGInferenceExtractor(Extractor):
         image_files = [os.path.join(dataset_folder, f) for f in os.listdir(dataset_folder)]
         
         # Create a pool of actors for inference
-        NUM_ACTORS = 4 # Adjust based on your system resources
+        NUM_ACTORS = 4 
         actors = [ImageInferenceActor.remote(model_ref, metadata_ref) for _ in range(NUM_ACTORS)]
         actors_pool = ActorPool(actors)
         
