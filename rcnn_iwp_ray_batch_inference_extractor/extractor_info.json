@@ -1,0 +1,48 @@
+{
+    "@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
+    "name": "ncsa.pdg-model-ray-batch-inference-extractor",
+    "version": "1.0",
+    "description": "Model Inference extractor for Ice Wedge Polygon Dataset",
+    "author": "Vismayak Mohanarajan",
+    "contributors": [
+    ],
+    "contexts": [],
+    "repository": [
+      {
+        "repType": "git",
+        "repUrl": "https://opensource.ncsa.illinois.edu/stash/scm/cats/pyclowder.git"
+      }
+    ],
+    "process": {
+      "file": [
+      "text/*"
+    ]
+    },
+    "max_retry": 1,
+    "external_services": [],
+    "dependencies": [],
+    "bibtex": [],
+    "parameters": {
+      "schema": {
+          "MODEL_FILE":{
+            "type":"string",
+            "title":"Model file",
+            "description":"The Model weights file",
+            "format": "ClowderFile"
+         },
+         "CONFIDENCE_THRESHOLD": {
+          "type": "number",
+          "title": "Confidence Threshold",
+          "description": "Confidence threshold for the model",
+          "default": 0.6
+         },
+         "DATASET_FOLDER": {
+          "type": "string",
+          "title": "Dataset folder",
+          "description": "The dataset folder",
+          "format": "ClowderFile",
+          "selectFolder": true
+         }
+      }
+    }
+  }
