@@ -14,8 +14,8 @@
       }
     ],
     "process": {
-      "file": [
-      "text/*"
+      "dataset": [
+      "*"
     ]
     },
     "max_retry": 1,

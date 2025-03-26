@@ -28,11 +28,7 @@ class IWPKubeRayInferenceExtractor(Extractor):
     def process_message(self, connector, host, secret_key, resource, parameters):
         # Process the file and upload the results
         logger = logging.getLogger(__name__)
-
-        file_path = resource["local_paths"][0]
-        file_id = resource['id']
-        file_name = parameters['filename']
-        dataset_id = resource['parent']['id']
+        dataset_id = resource['id']
 
         # Load user-defined params from the GUI.
         MODEL_FILE_ID = ""
