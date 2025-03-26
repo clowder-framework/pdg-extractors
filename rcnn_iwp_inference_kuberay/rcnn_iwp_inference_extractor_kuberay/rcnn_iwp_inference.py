@@ -38,7 +38,7 @@ def get_metadata(dataset_name, dataset_path):
     
 
 # Function to run inference on the image
-def run_inference(model, image_path, metadata, threshold=0.6):
+def run_inference(model, image_path, metadata, threshold=0.6, output_file_name=None):
     image = cv2.imread(image_path)
     image_tensor = torch.from_numpy(image).permute(2, 0, 1)
     batched_inputs = [{"image": image_tensor}]
@@ -54,7 +54,10 @@ def run_inference(model, image_path, metadata, threshold=0.6):
     # Visualize and save the output image (original functionality)
     v = Visualizer(image[:, :, ::-1], metadata=metadata, scale=1.2)
     out = v.draw_instance_predictions(filtered_instances.to("cpu"))
-    cv2.imwrite("output.jpg", out.get_image()[:, :, ::-1])
+    if output_file_name is None:
+        output_file_name = "output.jpg"
+        
+    cv2.imwrite(output_file_name, out.get_image()[:, :, ::-1])
     
     return coco_boxes
 

@@ -2,9 +2,10 @@ import logging
 import time
 import json
 import os
-
+from typing import Dict
 
 from pyclowder.extractors import Extractor
+import pyclowder.datasets
 import ray
 from ray.job_submission import JobSubmissionClient, JobStatus
 
@@ -58,13 +59,21 @@ class IWPKubeRayInferenceExtractor(Extractor):
         else:
             raise ValueError("DATASET_FOLDER is not provided in the parameters.")
         
+        folder_name = dataset_folder_metadata["selectionName"]
+        folder_id = dataset_folder_metadata["selectionID"]
+
+        # # Create a new folder for the output images
+        output_folder_name = f"{folder_name}_masked"
+        clowder_output_folder = pyclowder.datasets.create_folder(connector, host, secret_key, dataset_id, output_folder_name)
+
+        
         job_id = self.job_submission_client.submit_job(
             # Entrypoint shell command to execute
-            entrypoint=f"python inference_kuberay_script.py {host} {parameters['datasetId']} {secret_key}",
+            entrypoint=f"python inference_kuberay_script.py {host} {secret_key} {dataset_id} {folder_id} {MODEL_FILE_ID} {CONFIDENCE_THRESHOLD} {clowder_output_folder}",
             # Path to the local directory that contains the script.py file
             runtime_env={"working_dir": "./",
                          "env_vars": {"CLOWDER_VERSION": "2",
-                                      "MINIO_MOUNTED_PATH": os.getenv("MINIO_MOUNTED_PATH")}}
+                                      "MINIO_MOUNTED_PATH":os.getenv("MINIO_MOUNTED_PATH")}}
         )
         
         logger.info(f"Job submitted with ID: {job_id}")
@@ -72,14 +81,14 @@ class IWPKubeRayInferenceExtractor(Extractor):
         def wait_until_status(job_id, status_to_wait_for, timeout_seconds=10000):
             start = time.time()
             while time.time() - start <= timeout_seconds:
-                status = client.get_job_status(job_id)
+                status = self.job_submission_client.get_job_status(job_id)
                 print(f"status: {status}")
                 if status in status_to_wait_for:
                     break
                 time.sleep(1)
 
         wait_until_status(job_id, {JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED})
-        logs = client.get_job_logs(job_id)
+        logs = self.job_submission_client.get_job_logs(job_id)
         print(logs)
 
         # Finish

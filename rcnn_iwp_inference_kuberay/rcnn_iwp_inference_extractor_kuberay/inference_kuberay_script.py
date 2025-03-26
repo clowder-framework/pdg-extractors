@@ -5,6 +5,9 @@ import os
 import sys
 import gc
 import logging
+import requests
+import json
+import posixpath
 
 import pyclowder.files
 import pyclowder.datasets
@@ -14,9 +17,10 @@ from clowder_utils import get_folder_files
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rcnn_iwp_inference import load_model, get_metadata, run_inference
 
-@ray.remote()
+# @ray.remote()
+@ray.remote(num_cpus=1, memory=4 * 1024 * 1024 * 1024)
 class ImageInferenceActor:
-    def __init__(self, model_ref, metadata_ref):
+    def __init__(self, model_ref, metadata_ref, file_dict_ref):
         self.model = model_ref
         self.metadata = metadata_ref
         self.file_dict = file_dict_ref
@@ -28,7 +32,7 @@ class ImageInferenceActor:
         try:
             print(f"Worker {worker_id} running inference on {image_path}")
 
-            temp_output_file = f"output_{worker_id}_{file_id}.jpg"
+            output_file_name = f"output_{worker_id}_{file_id}.jpg"
 
             # Run inference with custom output path
             coco_mask_metadata = run_inference(
@@ -36,16 +40,20 @@ class ImageInferenceActor:
                 image_path, 
                 self.metadata, 
                 threshold=threshold, 
-                output_file=temp_output_file
+                output_file_name=output_file_name
             )
 
             # Read the output file 
-            with open(temp_output_file, 'rb') as f:
+            with open(output_file_name, 'rb') as f:
                 image_file_data = f.read()
             
+            # Delete the output file
+            os.remove(output_file_name)
+
             # Force garbage collection to free memory
             gc.collect()
 
+            print(f"Worker {worker_id} completed inference on {image_path}")
             # Return the image file data and metadata
             return {
                 "file_id": file_id,
@@ -70,9 +78,9 @@ if __name__ == "__main__":
     key = args[1]
     dataset_id = args[2]
     dataset_folder_id = args[3]
-    model_file_id = args[5]
-    confidence_threshold = args[6]
-    output_folder_id = args[7]
+    model_file_id = args[4]
+    confidence_threshold = float(args[5])
+    output_folder_id = args[6]
 
     logger = logging.getLogger(__name__)
 
@@ -82,8 +90,9 @@ if __name__ == "__main__":
     # Create a dictionary of file_id to file_name and file_path
     file_dict = {file['id']: {'name': file['name'], 'path': os.path.join(os.getenv("MINIO_MOUNTED_PATH"), file['id'])} for file in files}
 
+    model_file_path = os.path.join(os.getenv("MINIO_MOUNTED_PATH"), model_file_id)
     # Load the model and metadata
-    model = load_model("configs/mask_rcnn_vitdet.py", "configs/datasets/iwp.py", model_file_id)
+    model = load_model("configs/mask_rcnn_vitdet.py", "configs/datasets/iwp.py", model_file_path)
     metadata = get_metadata("iwp_test", "data/iwp/iwp_test.json")
 
     # Add to the ray store
@@ -123,7 +132,10 @@ if __name__ == "__main__":
         metadata = {
             "COCO Bounding Boxes": coco_mask_metadata
         }
-        pyclowder.files.upload_metadata(host, key, result["file_id"], metadata)
+        headers = {'Content-Type': 'application/json',
+                   'X-API-KEY': key}
+        url = posixpath.join(host, 'api/v2/files/%s/metadata' % result["file_id"])
+        result = requests.post(url, headers=headers, data=json.dumps(metadata))
         
         output_file_name = result["file_name"] + "_masked.jpg"
         with open(output_file_name, 'wb') as f:
