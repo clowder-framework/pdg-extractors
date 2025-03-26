@@ -8,7 +8,6 @@ import logging
 import requests
 import json
 import posixpath
-
 import pyclowder.files
 import pyclowder.datasets
 
@@ -25,14 +24,15 @@ class ImageInferenceActor:
         self.metadata = metadata_ref
         self.file_dict = file_dict_ref
 
-    def process_image(self, file_id, threshold, worker_id ):
+    def process_image(self, file_id, threshold, submission_id, worker_id ):
         # Get the image path from the file_dict
         image_path = self.file_dict[file_id]['path']
         
         try:
             print(f"Worker {worker_id} running inference on {image_path}")
 
-            output_file_name = f"output_{worker_id}_{file_id}.jpg"
+            output_file_name = f"{file_dict[file_id]['name']}_masked.jpg"
+            output_file_path = os.path.join(os.getenv("MINIO_MOUNTED_PATH"), submission_id, output_file_name)
 
             # Run inference with custom output path
             coco_mask_metadata = run_inference(
@@ -40,15 +40,8 @@ class ImageInferenceActor:
                 image_path, 
                 self.metadata, 
                 threshold=threshold, 
-                output_file_name=output_file_name
+                output_file_path=output_file_path
             )
-
-            # Read the output file 
-            with open(output_file_name, 'rb') as f:
-                image_file_data = f.read()
-            
-            # Delete the output file
-            os.remove(output_file_name)
 
             # Force garbage collection to free memory
             gc.collect()
@@ -57,8 +50,8 @@ class ImageInferenceActor:
             # Return the image file data and metadata
             return {
                 "file_id": file_id,
-                "image_file_data": image_file_data,
-                "coco_mask_metadata": coco_mask_metadata
+                "coco_mask_metadata": coco_mask_metadata,
+                "output_file_name": output_file_name
             }
         
         except Exception as e:
@@ -80,7 +73,7 @@ if __name__ == "__main__":
     dataset_folder_id = args[3]
     model_file_id = args[4]
     confidence_threshold = float(args[5])
-    output_folder_id = args[6]
+    submission_id = args[6]
 
     logger = logging.getLogger(__name__)
 
@@ -89,6 +82,8 @@ if __name__ == "__main__":
 
     # Create a dictionary of file_id to file_name and file_path
     file_dict = {file['id']: {'name': file['name'], 'path': os.path.join(os.getenv("MINIO_MOUNTED_PATH"), file['id'])} for file in files}
+
+
 
     model_file_path = os.path.join(os.getenv("MINIO_MOUNTED_PATH"), model_file_id)
     # Load the model and metadata
@@ -100,13 +95,17 @@ if __name__ == "__main__":
     metadata_ref = ray.put(metadata)
     file_dict_ref = ray.put(file_dict)
 
+    # Create a new folder for the output images
+    output_folder_path = os.path.join(os.getenv("MINIO_MOUNTED_PATH"), submission_id)
+    os.makedirs(output_folder_path, exist_ok=True)
+
     NUM_ACTORS = 2
     actors = [ImageInferenceActor.remote(model_ref, metadata_ref, file_dict_ref) for _ in range(NUM_ACTORS)]
     actor_pool = ActorPool(actors)
 
     # Create task inputs with unique IDs
     tasks = [
-        (file_id, confidence_threshold, i) 
+        (file_id, confidence_threshold, submission_id, i) 
         for i, file_id in enumerate(file_dict.keys())
     ]
     
@@ -117,38 +116,27 @@ if __name__ == "__main__":
 
     
     # Process results
-    # Post metadata to Clowder file 
-    # Save output image to a clowder directory 
-
+    # Create a json file with the results to the file_id as a dict and save it to MINIO_MOUNTED_PATH
+    results_json = {}
+    
     for result in results:
         if "error" in result:
             print(f"Error processing image {result['file_id']}: {result['error']}")
+            results_json[result["file_id"]] = {
+                "error": result["error"]
+            }
             continue
         
-        image_file_data = result["image_file_data"]
-        coco_mask_metadata = result["coco_mask_metadata"]
-        
-        # Post metadata to Clowder file 
-        metadata = {
-            "COCO Bounding Boxes": coco_mask_metadata
+        results_json[result["file_id"]] = {
+            "coco_mask_metadata": result["coco_mask_metadata"],
+            "output_file_name": result["output_file_name"]
         }
-        headers = {'Content-Type': 'application/json',
-                   'X-API-KEY': key}
-        url = posixpath.join(host, 'api/v2/files/%s/metadata' % result["file_id"])
-        result = requests.post(url, headers=headers, data=json.dumps(metadata))
         
-        output_file_name = file_dict[result["file_id"]]["name"] + "_masked.jpg"
-        with open(output_file_name, 'wb') as f:
-            f.write(image_file_data)
-        
-        # Upload the output image to the new folder
-        pyclowder.files.upload(host, key, output_folder_id, output_file_name)
+    # Save the results to the MINIO_MOUNTED_PATH
+    results_json_path = os.path.join(os.getenv("MINIO_MOUNTED_PATH"), f"iwp_detection_results_{submission_id}.json")
+    with open(results_json_path, 'w') as f:
+        json.dump(results_json, f)
 
-        # Delete the output image from the local directory
-        os.remove(output_file_name)
-    
-    
-        
         
 
     
