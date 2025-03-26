@@ -100,7 +100,8 @@ if __name__ == "__main__":
     
     # Production with Kuberay
     # The address of the Ray cluster needs to be updated as needed
-    # ray_client = JobSubmissionClient("http://clowder-raycluster-kuberay-head-svc.ibm-hpc.svc.cluster.local:8265")
+    # Example KubeRay Cluster URL: http://clowder-raycluster-kuberay-head-svc.ibm-hpc.svc.cluster.local:8265
+    # ray_client = JobSubmissionClient(os.getenv("RAY_CLUSTER_URL"))
     
     # Local Testing
     ray.init()

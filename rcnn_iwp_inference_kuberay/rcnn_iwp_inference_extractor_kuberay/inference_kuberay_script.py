@@ -137,7 +137,7 @@ if __name__ == "__main__":
         url = posixpath.join(host, 'api/v2/files/%s/metadata' % result["file_id"])
         result = requests.post(url, headers=headers, data=json.dumps(metadata))
         
-        output_file_name = result["file_name"] + "_masked.jpg"
+        output_file_name = file_dict[result["file_id"]]["name"] + "_masked.jpg"
         with open(output_file_name, 'wb') as f:
             f.write(image_file_data)
         
