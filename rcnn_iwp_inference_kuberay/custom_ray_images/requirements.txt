@@ -5,3 +5,4 @@ torchgeo===0.6.1
 git+https://github.com/facebookresearch/detectron2.git
 albumentations==1.4.15
 albucore==0.0.16
+ray==2.44.0

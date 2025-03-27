@@ -8,7 +8,6 @@ import string
 import shutil
 
 import pyclowder.files
-import pyclowder.datasets
 from pyclowder.extractors import Extractor
 import ray
 from ray.job_submission import JobSubmissionClient, JobStatus
@@ -126,14 +125,14 @@ class IWPKubeRayInferenceExtractor(Extractor):
         
 if __name__ == "__main__":
     
-    # Production with Kuberay
-    # The address of the Ray cluster needs to be updated as needed
-    # Example KubeRay Cluster URL: http://clowder-raycluster-kuberay-head-svc.ibm-hpc.svc.cluster.local:8265
-    # ray_client = JobSubmissionClient(os.getenv("RAY_CLUSTER_URL"))
-    
     # Local Testing
-    ray.init()
-    ray_client = JobSubmissionClient("http://127.0.0.1:8265")
+    # ray.init() 
+
+    # The address of the Ray cluster stored in the environment variable
+    #  KubeRay Cluster URL: http://clowder-raycluster-kuberay-head-svc.ibm-hpc.svc.cluster.local:8265
+    # Local Testing URL: http://127.0.0.1:8265
+
+    ray_client = JobSubmissionClient(os.getenv("RAY_CLUSTER_URL"))
 
     extractor = IWPKubeRayInferenceExtractor(ray_client)
     extractor.start()
