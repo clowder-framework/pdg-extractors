@@ -4,15 +4,14 @@ USER root
 
 RUN apt-get update && apt-get install -y \
     g++ \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
 
 # Install torch first, separately, to avoid the metadata issue
 RUN pip install --no-cache-dir torch==2.2.1 torchvision==0.17.1
-
-# Install cv2 headless
-RUN pip install opencv-python-headless==4.11.0.86
 
 RUN pip install -r requirements.txt
 
