@@ -12,7 +12,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir torch==2.2.1 torchvision==0.17.1
 
 # Install cv2 headless
-pip install opencv-python-headless==4.11.0.86
+RUN pip install opencv-python-headless==4.11.0.86
 
 RUN pip install -r requirements.txt
 
