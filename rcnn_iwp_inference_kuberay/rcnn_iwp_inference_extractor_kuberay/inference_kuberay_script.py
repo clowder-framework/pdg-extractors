@@ -99,7 +99,7 @@ if __name__ == "__main__":
     output_folder_path = os.path.join(os.getenv("MINIO_MOUNTED_PATH"), submission_id)
     os.makedirs(output_folder_path, exist_ok=True)
 
-    NUM_ACTORS = 2
+    NUM_ACTORS = os.getenv("NUM_ACTORS", 2)
     actors = [ImageInferenceActor.remote(model_ref, metadata_ref, file_dict_ref) for _ in range(NUM_ACTORS)]
     actor_pool = ActorPool(actors)
 
