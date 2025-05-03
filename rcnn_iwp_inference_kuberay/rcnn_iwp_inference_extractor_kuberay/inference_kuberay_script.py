@@ -74,6 +74,7 @@ if __name__ == "__main__":
     model_file_id = args[4]
     confidence_threshold = float(args[5])
     submission_id = args[6]
+    num_actors = int(args[7])
 
     logger = logging.getLogger(__name__)
 
@@ -99,8 +100,8 @@ if __name__ == "__main__":
     output_folder_path = os.path.join(os.getenv("MINIO_MOUNTED_PATH"), submission_id)
     os.makedirs(output_folder_path, exist_ok=True)
 
-    NUM_ACTORS = os.getenv("NUM_ACTORS", 2)
-    actors = [ImageInferenceActor.remote(model_ref, metadata_ref, file_dict_ref) for _ in range(NUM_ACTORS)]
+    
+    actors = [ImageInferenceActor.remote(model_ref, metadata_ref, file_dict_ref) for _ in range(num_actors)]
     actor_pool = ActorPool(actors)
 
     # Create task inputs with unique IDs
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     ]
     
     # Process all images using the actor pool
-    logger.info(f"Starting inference on {len(tasks)} images using {NUM_ACTORS} actors")
+    logger.info(f"Starting inference on {len(tasks)} images using {num_actors} actors")
     results = list(actor_pool.map(lambda actor, task: actor.process_image.remote(*task), tasks))
     logger.info(f"Completed inference on all images")
 

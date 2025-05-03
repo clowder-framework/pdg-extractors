@@ -61,13 +61,14 @@ class IWPKubeRayInferenceExtractor(Extractor):
         folder_name = dataset_folder_metadata["selectionName"]
         folder_id = dataset_folder_metadata["selectionID"]
 
+        NUM_ACTORS = os.getenv("NUM_ACTORS", 2)
 
         # Create a random 5 character string
         submission_id = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
 
         job_id = self.job_submission_client.submit_job(
             # Entrypoint shell command to execute
-            entrypoint=f"python inference_kuberay_script.py {host} {secret_key} {dataset_id} {folder_id} {MODEL_FILE_ID} {CONFIDENCE_THRESHOLD} {submission_id}",
+            entrypoint=f"python inference_kuberay_script.py {host} {secret_key} {dataset_id} {folder_id} {MODEL_FILE_ID} {CONFIDENCE_THRESHOLD} {submission_id} {NUM_ACTORS}",
             # Path to the local directory that contains the script.py file
             runtime_env={"working_dir": "./",
                          "env_vars": {"CLOWDER_VERSION": "2",
